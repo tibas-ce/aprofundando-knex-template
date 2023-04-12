@@ -160,28 +160,6 @@ app.put("/bands/:id", async (req: Request, res: Response) => {
     }
 })
 
-app.get("/songs", async (req: Request, res: Response) => {
-    try {
-        const result = await db.raw(`
-            SELECT * FROM songs;
-        `)
-
-        res.status(200).send(result)
-    } catch (error) {
-        console.log(error)
-
-        if (req.statusCode === 200) {
-            res.status(500)
-        }
-
-        if (error instanceof Error) {
-            res.send(error.message)
-        } else {
-            res.send("Erro inesperado")
-        }
-    }
-})
-
 app.post("/songs", async (req: Request, res: Response) => {
     try {
         const id = req.body.id
@@ -310,4 +288,35 @@ app.put("/songs/:id", async (req: Request, res: Response) => {
             res.send("Erro inesperado")
         }
     }
+})
+
+app.get("/songs", async (req: Request, res: Response) => {
+  try {
+      const result = await db.raw(`
+        SELECT
+          songs.id AS id,
+          songs.name AS name,
+          bands.id AS bandId,
+          bands.name AS bandName
+        FROM songs
+        INNER JOIN bands
+        ON songs.band_id = bands.id;
+      `)
+      // referencie o notion do material assíncrono "Mais práticas com query builder"
+      // (Seções "Apelidando com ALIAS" e "Junções com JOIN")
+
+      res.status(200).send(result)
+  } catch (error) {
+      console.log(error)
+
+      if (req.statusCode === 200) {
+          res.status(500)
+      }
+
+      if (error instanceof Error) {
+          res.send(error.message)
+      } else {
+          res.send("Erro inesperado")
+      }
+  }
 })
